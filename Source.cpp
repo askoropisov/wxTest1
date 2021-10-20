@@ -31,6 +31,7 @@ enum {
     wxMENU_ITEM_RESISTOR,
     wxMENU_ITEM_TRANSISTOR,
     wxMENU_ITEM_SOURCE,
+    wxEVT_CLICK_MOUSE
 };
 
 class Frame : public wxFrame {
@@ -40,13 +41,18 @@ private:
     void OnMenu_FileQuit(wxCommandEvent& evt);
     void Save(wxCommandEvent& evt);
     void Open(wxCommandEvent& evt);
+    void ClicMouse(wxMouseEvent& evt);
 
     void OnMouseMove(wxMouseEvent& evt);
 
     void OnPaint(wxPaintEvent& evt);
 
-    //wxDECLARE_EVENT_TABLE();
+    wxDECLARE_EVENT_TABLE();
 };
+
+wxBEGIN_EVENT_TABLE(Frame, wxFrame)
+    EVT_LEFT_DOWN(Frame::ClicMouse)
+wxEND_EVENT_TABLE()
 
 
 void Frame::OnMenu_FileQuit(wxCommandEvent& evt) {
@@ -66,12 +72,18 @@ void Frame::OnMouseMove(wxMouseEvent& evt) {
     SetStatusText(wxString::Format("[ %d, %d ]", evt.GetX(), evt.GetY(), 1));
 }
 
-wxPoint MousePos(wxMouseEvent& evt) {
-    return evt.GetPosition();
+
+
+wxPoint mouse_pos(100,100);
+void Frame::ClicMouse(wxMouseEvent& evt) {
+     mouse_pos=evt.GetPosition();
+     Refresh();
 }
 
 
-int element = 3;
+
+
+int element = 2;
 void Frame::OnPaint(wxPaintEvent& evt) {
     wxMouseEvent evn;
     wxPaintDC dc(this);
@@ -86,20 +98,21 @@ void Frame::OnPaint(wxPaintEvent& evt) {
     switch (element)
     {
     case 1: {
-        dc.DrawLine(wxPoint(100, 200), wxPoint(150,200));
-        dc.DrawRectangle(150, 180, 100, 40);
-        dc.DrawLine(wxPoint(250, 200), wxPoint(300, 200));
+        dc.DrawLine(mouse_pos, mouse_pos+wxPoint(50,0));
+        dc.DrawRectangle(mouse_pos+wxPoint(50, -20), wxSize(100, 40));
+        dc.DrawLine(mouse_pos+wxPoint(150,0), mouse_pos+wxPoint(200,0)); 
         break;
     }
     case 2: {
-        dc.DrawLine(wxPoint(100, 200), wxPoint(150, 200));
-        dc.DrawRectangle(150, 170, 120, 60);
-        dc.DrawLine(wxPoint(270, 200), wxPoint(320, 200));
 
-        dc.DrawLine(wxPoint(190,170), wxPoint(190,230));
-        dc.DrawLine(wxPoint(230,170), wxPoint(230,230));
+        dc.DrawLine(mouse_pos, mouse_pos+wxPoint(50,0));
+        dc.DrawRectangle(mouse_pos+wxPoint(50,-30), wxSize(120,60));
+        dc.DrawLine(mouse_pos+wxPoint(170, 0), mouse_pos+wxPoint(220, 0));
 
-        dc.DrawLine(wxPoint(210,230), wxPoint(210,270));
+        dc.DrawLine(mouse_pos+wxPoint(90, -30), mouse_pos+wxPoint(90,30));
+        dc.DrawLine(mouse_pos+wxPoint(130, -30), mouse_pos+wxPoint(130, 30));
+
+        dc.DrawLine(mouse_pos+wxPoint(110, 30), mouse_pos+wxPoint(110, 70));
         break;
     }
     case 3: {
@@ -125,7 +138,7 @@ Frame::Frame(const wxString& title)
     wxMenuBar* p_menubar = new wxMenuBar;
     wxMenu* p_menuFile = new wxMenu;
     wxMenu* p_menuElement = new wxMenu;
-    wxToolBar* p_toolBar = CreateToolBar();
+   // wxToolBar* p_toolBar = CreateToolBar();
 
    
     p_menuFile->Append(wxMENU_ITEM_OPEN, wxT("&Open File"));
@@ -142,18 +155,19 @@ Frame::Frame(const wxString& title)
 
     SetMenuBar(p_menubar);
 
-    wxImage::AddHandler(new wxPNGHandler);
-    wxBitmap bmp_exit(wxT("exit.png"), wxBITMAP_TYPE_PNG);
+   /* wxImage::AddHandler(new wxPNGHandler);
+    wxBitmap bmp_exit(wxT("exit.png"), wxBITMAP_TYPE_PNG);*/
 
 
-    p_toolBar->AddTool(wxID_EXIT, wxT("Exit application"), bmp_exit, wxT("Click the button"));
-    p_toolBar->Realize();
+    /*p_toolBar->AddTool(wxID_EXIT, wxT("Exit application"), bmp_exit, wxT("Click the button"));
+    p_toolBar->Realize();*/
 
     Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Frame::OnMenu_FileQuit));
     Connect(wxMENU_ITEM_OPEN, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Frame::Open));
     Connect(wxMENU_ITEM_SAVE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Frame::Save));
 
     Connect(wxEVT_MOTION, wxMouseEventHandler(Frame::OnMouseMove));
+    Connect(wxEVT_CLICK_MOUSE, wxMouseEventHandler(Frame::ClicMouse));
 
     Connect(wxEVT_PAINT, wxPaintEventHandler(Frame::OnPaint));
 
