@@ -12,7 +12,6 @@
 #pragma comment(linker, "/SUBSYSTEM:windows")
 
 
-int element=1;
 
 enum type {
             resistor,
@@ -72,6 +71,7 @@ wxPoint MousePos(wxMouseEvent& evt) {
 }
 
 
+int element = 3;
 void Frame::OnPaint(wxPaintEvent& evt) {
     wxMouseEvent evn;
     wxPaintDC dc(this);
@@ -92,11 +92,20 @@ void Frame::OnPaint(wxPaintEvent& evt) {
         break;
     }
     case 2: {
+        dc.DrawLine(wxPoint(100, 200), wxPoint(150, 200));
+        dc.DrawRectangle(150, 170, 120, 60);
+        dc.DrawLine(wxPoint(270, 200), wxPoint(320, 200));
 
+        dc.DrawLine(wxPoint(190,170), wxPoint(190,230));
+        dc.DrawLine(wxPoint(230,170), wxPoint(230,230));
+
+        dc.DrawLine(wxPoint(210,230), wxPoint(210,270));
         break;
     }
     case 3: {
-
+        dc.DrawLine(wxPoint(210, 100), wxPoint(210, 130));
+        dc.DrawCircle(wxPoint(210,160), wxCoord(30));
+        dc.DrawLine(wxPoint(210, 190), wxPoint(210, 220));
         break;
     }
     default:
@@ -121,6 +130,7 @@ Frame::Frame(const wxString& title)
    
     p_menuFile->Append(wxMENU_ITEM_OPEN, wxT("&Open File"));
     p_menuFile->Append(wxMENU_ITEM_SAVE, wxT("Save As"));
+    p_menuFile->AppendSeparator();
     p_menuFile->Append(wxID_EXIT, wxT("&Exit"));
     p_menubar->Append(p_menuFile, wxT("&File"));
 
