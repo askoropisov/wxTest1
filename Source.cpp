@@ -1,4 +1,8 @@
 #include <wx/wx.h>
+#include <wx/wfstream.h>
+#include <string> 
+#include <iostream>
+#include <fstream>
 
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "rpcrt4.lib")
@@ -11,8 +15,10 @@
 
 #pragma comment(linker, "/SUBSYSTEM:windows")
 
+using std::fstream;
 
 
+fstream file;
 enum type {
             resistor,
             transistor,
@@ -22,8 +28,9 @@ enum type {
 class element {
 public:
     int x_pos,y_pos;
-    type type;
-};
+    //type type;
+    int type;
+} item;
 
 enum {
     wxMENU_ITEM_OPEN = wxID_HIGHEST + 1,
@@ -31,7 +38,7 @@ enum {
     wxMENU_ITEM_RESISTOR,
     wxMENU_ITEM_TRANSISTOR,
     wxMENU_ITEM_SOURCE,
-    wxEVT_CLICK_MOUSE
+    wxEVT_CLICK_MOUSE, 
 };
 
 class Frame : public wxFrame {
@@ -40,12 +47,16 @@ public:
 private:
     void OnMenu_FileQuit(wxCommandEvent& evt);
     void Save(wxCommandEvent& evt);
-    void Open(wxCommandEvent& evt);
+    void Open(wxCommandEvent& WXUNUSED(event));
+    void ReadFile(fstream &file);
     void ClicMouse(wxMouseEvent& evt);
 
     void OnMouseMove(wxMouseEvent& evt);
 
     void OnPaint(wxPaintEvent& evt);
+    void Paint_Resistor(wxCommandEvent&);
+    void Paint_Transistor(wxCommandEvent&);
+    void Paint_Source(wxCommandEvent&);
 
     wxDECLARE_EVENT_TABLE();
 };
@@ -53,6 +64,42 @@ private:
 wxBEGIN_EVENT_TABLE(Frame, wxFrame)
     EVT_LEFT_DOWN(Frame::ClicMouse)
 wxEND_EVENT_TABLE()
+
+void Frame::Open(wxCommandEvent& WXUNUSED(event))
+{
+
+    wxFileDialog
+        openFileDialog(this, _("Open text file"), "", "",
+            "texts files (*.txt)|*.txt", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if (openFileDialog.ShowModal() == wxID_CANCEL)
+        return; 
+
+    wxFileInputStream input_stream(openFileDialog.GetPath());
+    if (!input_stream.IsOk())
+    {
+        wxLogError("Cannot open file '%s'.", openFileDialog.GetPath());
+        return;
+    }
+    else {
+        std::string name_file= openFileDialog.GetPath();
+        file.open(name_file);
+        Frame::ReadFile(file);
+        file.close();
+    }
+}
+
+int element = 1;
+
+void Frame::ReadFile(fstream &file) {
+    std::string str_element;
+    file>>item.x_pos;
+    file>>item.y_pos;
+    file>>str_element;
+    if (str_element=="RESISTOR") item.type=1;
+    if (str_element=="TRANSISTORTOR") item.type=2;
+    if (str_element=="SOURCE") item.type=3;
+}
+
 
 
 void Frame::OnMenu_FileQuit(wxCommandEvent& evt) {
@@ -64,30 +111,37 @@ void Frame::Save(wxCommandEvent& evt) {
     else wxMessageBox(wxT("Unchecked!"));
 }
 
-void Frame::Open(wxCommandEvent& evt) {
-    wxMessageBox(wxT("Hello"));
-}
+//void Frame::Open(wxCommandEvent& evt) {
+//    wxMessageBox(wxT("Hello"));
+//}
 
 void Frame::OnMouseMove(wxMouseEvent& evt) {
     SetStatusText(wxString::Format("[ %d, %d ]", evt.GetX(), evt.GetY(), 1));
 }
 
-
-
-wxPoint mouse_pos(100,100);
+wxPoint mouse_pos(200, 200);
 void Frame::ClicMouse(wxMouseEvent& evt) {
      mouse_pos=evt.GetPosition();
      Refresh();
 }
 
+void Frame::Paint_Resistor(wxCommandEvent& evt) {
+    element=1; 
+    //Refresh();
+}
 
+void Frame::Paint_Transistor(wxCommandEvent& evt) {
+    element = 2;
+}
 
+void Frame::Paint_Source(wxCommandEvent& evt) {
+    element = 3;
+}
 
-int element = 2;
 void Frame::OnPaint(wxPaintEvent& evt) {
     wxMouseEvent evn;
     wxPaintDC dc(this);
-    wxPoint lineT(30,0);
+    //wxPoint lineT(30,0);
 
     wxBrush brush(wxColor(0, 255, 50));
     dc.SetBrush(brush);
@@ -116,9 +170,9 @@ void Frame::OnPaint(wxPaintEvent& evt) {
         break;
     }
     case 3: {
-        dc.DrawLine(wxPoint(210, 100), wxPoint(210, 130));
-        dc.DrawCircle(wxPoint(210,160), wxCoord(30));
-        dc.DrawLine(wxPoint(210, 190), wxPoint(210, 220));
+        dc.DrawLine(mouse_pos, mouse_pos+wxPoint(0, 30));
+        dc.DrawCircle(mouse_pos+wxPoint(0, 60), wxCoord(30));
+        dc.DrawLine(mouse_pos+wxPoint(0, 90), mouse_pos+wxPoint(0, 120));
         break;
     }
     default:
@@ -165,6 +219,10 @@ Frame::Frame(const wxString& title)
     Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Frame::OnMenu_FileQuit));
     Connect(wxMENU_ITEM_OPEN, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Frame::Open));
     Connect(wxMENU_ITEM_SAVE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Frame::Save));
+
+    Connect(wxMENU_ITEM_RESISTOR, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Frame::Paint_Resistor));
+    Connect(wxMENU_ITEM_TRANSISTOR, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Frame::Paint_Transistor));
+    Connect(wxMENU_ITEM_SOURCE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(Frame::Paint_Source));
 
     Connect(wxEVT_MOTION, wxMouseEventHandler(Frame::OnMouseMove));
     Connect(wxEVT_CLICK_MOUSE, wxMouseEventHandler(Frame::ClicMouse));
