@@ -19,13 +19,14 @@ using std::fstream;
 
 
 fstream file;
+fstream last_data;
 enum type {
             resistor,
             transistor,
             source
 };
 
-class element {
+class Element {
 public:
     int x_pos,y_pos;
     int type;
@@ -48,6 +49,7 @@ private:
     void Save(wxCommandEvent& evt);
     void Open(wxCommandEvent& WXUNUSED(event));
     void ReadFile(fstream &file);
+    void WriteFile(fstream &file);
     void ClicMouse(wxMouseEvent& evt);
 
     void OnMouseMove(wxMouseEvent& evt);
@@ -87,8 +89,10 @@ void Frame::Open(wxCommandEvent& WXUNUSED(event))
     }
 }
 
-int element = 1;
+int element ;
 bool open_file=false;
+
+
 void Frame::ReadFile(fstream &file) {
     std::string str_element;
     file>>item.x_pos;
@@ -97,19 +101,130 @@ void Frame::ReadFile(fstream &file) {
     if (str_element=="RESISTOR") item.type=1;
     if (str_element=="TRANSISTOR") item.type=2;
     if (str_element=="SOURCE") item.type=3;
+    if (str_element != "RESISTOR" && str_element != "TRANSISTOR" && str_element != "SOURCE") {
+        wxMessageBox(wxT("The file haved invalid data's"));
+    }
     open_file=true;
     Refresh();
 }
 
-
-
-void Frame::OnMenu_FileQuit(wxCommandEvent& evt) {
-    Close(true);
+wxPoint mouse_pos(item.x_pos, item.y_pos);
+void Frame::WriteFile(fstream& file) {
+    if(open_file==false){
+        file << mouse_pos.x << " " << mouse_pos.y << " ";
+        switch (element)
+        {
+        case 1:
+            file << "RESISTOR";
+            break;
+        case 2:
+            file << "TRANSISTOR";
+            break;
+        case 3:
+            file << "SOURCE";
+            break;
+        default:
+            break;
+        }
+    }
+    else {
+        file<<item.x_pos<<" "<<item.y_pos<<" ";
+        switch (item.type)
+        {
+        case 1:
+            file << "RESISTOR";
+            break;
+        case 2:
+            file << "TRANSISTOR";
+            break;
+        case 3:
+            file << "SOURCE";
+            break;
+        default:
+            break;
+        }
+    }
 }
 
-void Frame::Save(wxCommandEvent& evt) {
-    if (evt.IsChecked()) wxMessageBox(wxT("Checked!"));
-    else wxMessageBox(wxT("Unchecked!"));
+void ReadLastData (Element item){
+    std::string temp;
+    last_data.open("last_data.txt");
+    last_data>>item.x_pos;
+    last_data>>item.y_pos;
+    last_data>>temp;
+    if (temp=="RESISTOR") item.type=1;
+    if (temp=="TRANSISTOR") item.type=2;
+    if (temp=="SOURCE") item.type=3;
+    element=item.type;
+    mouse_pos=wxPoint(item.x_pos, item.y_pos);
+    last_data.close();
+}
+
+void Frame::OnMenu_FileQuit(wxCommandEvent& evt) {  
+
+    int dialog_return_value = wxNO;
+    wxMessageDialog* dial = new wxMessageDialog(NULL, _("Close program?"), _("Quit"), wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION);
+    dialog_return_value = dial->ShowModal();
+
+    switch (dialog_return_value)
+    {
+    case 5103:{
+
+        last_data.open("last_data.txt", std::ofstream::out | std::ofstream::trunc);
+        if (open_file == false) {
+
+            last_data << mouse_pos.x << " " << mouse_pos.y << " ";
+            switch (element)
+            {
+            case 1: last_data<<"RESISTOR"; break;
+            case 2: last_data<<"TRANSISTOR"; break;
+            case 3: last_data<<"SOURCE"; break;
+            default:
+                break;
+            }
+        }
+        else {
+            last_data << item.x_pos << " " << item.y_pos << " ";
+            switch (item.type)
+            {
+            case 1: last_data << "RESISTOR"; break;
+            case 2: last_data << "TRANSISTOR"; break;
+            case 3: last_data << "SOURCE"; break;
+            default:
+                break;
+            }
+        }
+        last_data.close();
+        Close(true);
+        }
+    case wxNO:
+        break;
+    default:
+        break;
+    }
+}
+
+void Frame::Save(wxCommandEvent& WXUNUSED(event))
+{
+    wxFileDialog
+        saveFileDialog(this, _("Save txt file"), "", "",
+            "TXT files (*.txt)|*.txt", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (saveFileDialog.ShowModal() == wxID_CANCEL)
+        return; 
+
+    wxFileOutputStream output_stream(saveFileDialog.GetPath());
+    if (!output_stream.IsOk())
+    {
+        wxLogError("Cannot save current contents in file '%s'.", saveFileDialog.GetPath());
+        return;
+    }
+    else {
+        std::string name_file = saveFileDialog.GetPath();
+        file.open(name_file);
+        Frame::WriteFile(file);
+        file.close();
+    }
+
 }
 
 //void Frame::Open(wxCommandEvent& evt) {
@@ -120,7 +235,7 @@ void Frame::OnMouseMove(wxMouseEvent& evt) {
     SetStatusText(wxString::Format("[ %d, %d ]", evt.GetX(), evt.GetY(), 1));
 }
 
-wxPoint mouse_pos(300, 400);
+
 void Frame::ClicMouse(wxMouseEvent& evt) {
      open_file=false;
      mouse_pos=evt.GetPosition();
@@ -147,8 +262,9 @@ void Frame::OnPaint(wxPaintEvent& evt) {
     wxBrush brush(wxColor(0, 255, 50));
     dc.SetBrush(brush);
 
-    wxPen pen(wxColor(0, 0, 0), 3);
+    wxPen pen(wxColor(0, 0, 0), 2);
     dc.SetPen(pen);
+
 
     if(open_file==false){ 
     switch (element) {
@@ -173,6 +289,11 @@ void Frame::OnPaint(wxPaintEvent& evt) {
         case 3: {
             dc.DrawLine(mouse_pos, mouse_pos + wxPoint(0, 30));
             dc.DrawCircle(mouse_pos + wxPoint(0, 60), wxCoord(30));
+
+            dc.DrawLine(mouse_pos+wxPoint(0, 40), mouse_pos + wxPoint(0, 80));
+            dc.DrawLine(mouse_pos+wxPoint(0, 40), mouse_pos + wxPoint(-10, 50));
+            dc.DrawLine(mouse_pos+wxPoint(0, 40), mouse_pos + wxPoint(10, 50));
+
             dc.DrawLine(mouse_pos + wxPoint(0, 90), mouse_pos + wxPoint(0, 120));
             break;
         }
@@ -203,6 +324,11 @@ void Frame::OnPaint(wxPaintEvent& evt) {
         case 3: {
             dc.DrawLine(wxPoint(item.x_pos, item.y_pos), wxPoint(item.x_pos, item.y_pos) + wxPoint(0, 30));
             dc.DrawCircle(wxPoint(item.x_pos, item.y_pos) + wxPoint(0, 60), wxCoord(30));
+
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(0, 40), wxPoint(item.x_pos, item.y_pos) + wxPoint(0, 80));
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(0, 40), wxPoint(item.x_pos, item.y_pos) + wxPoint(-10, 50));
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(0, 40), wxPoint(item.x_pos, item.y_pos) + wxPoint(10, 50));
+
             dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(0, 90), wxPoint(item.x_pos, item.y_pos) + wxPoint(0, 120));
             break;
         }
@@ -274,7 +400,8 @@ public:
 IMPLEMENT_APP(MyApp)
 
 bool MyApp::OnInit() {
-    Frame* frame = new Frame(wxT("Simple"));
+    ReadLastData(item);
+    Frame* frame = new Frame(wxT("Simulator"));
     frame->Show(true);
 
     return true;
