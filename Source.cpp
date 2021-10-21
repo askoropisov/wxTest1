@@ -288,15 +288,13 @@ void Window::OnPaint(wxPaintEvent& evt) {
             break;
         }
         case 2: {
-
-            dc.DrawLine(mouse_pos, mouse_pos + wxPoint(50, 0));
-            dc.DrawRectangle(mouse_pos + wxPoint(50, -30), wxSize(120, 60));
-            dc.DrawLine(mouse_pos + wxPoint(170, 0), mouse_pos + wxPoint(220, 0));
-
-            dc.DrawLine(mouse_pos + wxPoint(90, -30), mouse_pos + wxPoint(90, 30));
-            dc.DrawLine(mouse_pos + wxPoint(130, -30), mouse_pos + wxPoint(130, 30));
-
-            dc.DrawLine(mouse_pos + wxPoint(110, 30), mouse_pos + wxPoint(110, 70));
+            dc.DrawCircle(mouse_pos + wxPoint(40, 0), wxCoord(30));
+            dc.DrawLine(mouse_pos, mouse_pos + wxPoint(30, 0));
+            dc.DrawLine(mouse_pos + wxPoint(30, -20), mouse_pos + wxPoint(30, 20));
+            dc.DrawLine(mouse_pos + wxPoint(30, -7), mouse_pos+wxPoint(70,-25));
+            dc.DrawLine(mouse_pos + wxPoint(30, 7), mouse_pos+wxPoint(70,25));
+            dc.DrawLine(mouse_pos+wxPoint(60,20), mouse_pos+wxPoint(57, 13));
+            dc.DrawLine(mouse_pos+wxPoint(60,22), mouse_pos+wxPoint(50, 22));
             break;
         }
         case 3: {
@@ -323,15 +321,13 @@ void Window::OnPaint(wxPaintEvent& evt) {
             break;
         }
         case 2: {
-
-            dc.DrawLine(wxPoint(item.x_pos, item.y_pos), wxPoint(item.x_pos, item.y_pos) + wxPoint(50, 0));
-            dc.DrawRectangle(wxPoint(item.x_pos, item.y_pos) + wxPoint(50, -30), wxSize(120, 60));
-            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(170, 0), wxPoint(item.x_pos, item.y_pos) + wxPoint(220, 0));
-
-            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(90, -30), wxPoint(item.x_pos, item.y_pos) + wxPoint(90, 30));
-            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(130, -30), wxPoint(item.x_pos, item.y_pos) + wxPoint(130, 30));
-
-            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(110, 30), wxPoint(item.x_pos, item.y_pos) + wxPoint(110, 70));
+            dc.DrawCircle(wxPoint(item.x_pos, item.y_pos) + wxPoint(40, 0), wxCoord(30));
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos), wxPoint(item.x_pos, item.y_pos) + wxPoint(30, 0));
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(30, -20), wxPoint(item.x_pos, item.y_pos) + wxPoint(30, 20));
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(30, -7), wxPoint(item.x_pos, item.y_pos) + wxPoint(70, -25));
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(30, 7),  wxPoint(item.x_pos, item.y_pos) + wxPoint(70, 25));
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(60, 20), wxPoint(item.x_pos, item.y_pos) + wxPoint(57, 13));
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(60, 22), wxPoint(item.x_pos, item.y_pos) + wxPoint(50, 22));
             break;
         }
         case 3: {
