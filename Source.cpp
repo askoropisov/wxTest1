@@ -28,7 +28,6 @@ enum type {
 class element {
 public:
     int x_pos,y_pos;
-    //type type;
     int type;
 } item;
 
@@ -89,15 +88,17 @@ void Frame::Open(wxCommandEvent& WXUNUSED(event))
 }
 
 int element = 1;
-
+bool open_file=false;
 void Frame::ReadFile(fstream &file) {
     std::string str_element;
     file>>item.x_pos;
     file>>item.y_pos;
     file>>str_element;
     if (str_element=="RESISTOR") item.type=1;
-    if (str_element=="TRANSISTORTOR") item.type=2;
+    if (str_element=="TRANSISTOR") item.type=2;
     if (str_element=="SOURCE") item.type=3;
+    open_file=true;
+    Refresh();
 }
 
 
@@ -119,8 +120,9 @@ void Frame::OnMouseMove(wxMouseEvent& evt) {
     SetStatusText(wxString::Format("[ %d, %d ]", evt.GetX(), evt.GetY(), 1));
 }
 
-wxPoint mouse_pos(200, 200);
+wxPoint mouse_pos(300, 400);
 void Frame::ClicMouse(wxMouseEvent& evt) {
+     open_file=false;
      mouse_pos=evt.GetPosition();
      Refresh();
 }
@@ -141,7 +143,6 @@ void Frame::Paint_Source(wxCommandEvent& evt) {
 void Frame::OnPaint(wxPaintEvent& evt) {
     wxMouseEvent evn;
     wxPaintDC dc(this);
-    //wxPoint lineT(30,0);
 
     wxBrush brush(wxColor(0, 255, 50));
     dc.SetBrush(brush);
@@ -149,45 +150,75 @@ void Frame::OnPaint(wxPaintEvent& evt) {
     wxPen pen(wxColor(0, 0, 0), 3);
     dc.SetPen(pen);
 
-    switch (element)
-    {
-    case 1: {
-        dc.DrawLine(mouse_pos, mouse_pos+wxPoint(50,0));
-        dc.DrawRectangle(mouse_pos+wxPoint(50, -20), wxSize(100, 40));
-        dc.DrawLine(mouse_pos+wxPoint(150,0), mouse_pos+wxPoint(200,0)); 
-        break;
-    }
-    case 2: {
+    if(open_file==false){ 
+    switch (element) {
+        case 1: {
+            dc.DrawLine(mouse_pos, mouse_pos + wxPoint(50, 0));
+            dc.DrawRectangle(mouse_pos + wxPoint(50, -20), wxSize(100, 40));
+            dc.DrawLine(mouse_pos + wxPoint(150, 0), mouse_pos + wxPoint(200, 0));
+            break;
+        }
+        case 2: {
 
-        dc.DrawLine(mouse_pos, mouse_pos+wxPoint(50,0));
-        dc.DrawRectangle(mouse_pos+wxPoint(50,-30), wxSize(120,60));
-        dc.DrawLine(mouse_pos+wxPoint(170, 0), mouse_pos+wxPoint(220, 0));
+            dc.DrawLine(mouse_pos, mouse_pos + wxPoint(50, 0));
+            dc.DrawRectangle(mouse_pos + wxPoint(50, -30), wxSize(120, 60));
+            dc.DrawLine(mouse_pos + wxPoint(170, 0), mouse_pos + wxPoint(220, 0));
 
-        dc.DrawLine(mouse_pos+wxPoint(90, -30), mouse_pos+wxPoint(90,30));
-        dc.DrawLine(mouse_pos+wxPoint(130, -30), mouse_pos+wxPoint(130, 30));
+            dc.DrawLine(mouse_pos + wxPoint(90, -30), mouse_pos + wxPoint(90, 30));
+            dc.DrawLine(mouse_pos + wxPoint(130, -30), mouse_pos + wxPoint(130, 30));
 
-        dc.DrawLine(mouse_pos+wxPoint(110, 30), mouse_pos+wxPoint(110, 70));
-        break;
+            dc.DrawLine(mouse_pos + wxPoint(110, 30), mouse_pos + wxPoint(110, 70));
+            break;
+        }
+        case 3: {
+            dc.DrawLine(mouse_pos, mouse_pos + wxPoint(0, 30));
+            dc.DrawCircle(mouse_pos + wxPoint(0, 60), wxCoord(30));
+            dc.DrawLine(mouse_pos + wxPoint(0, 90), mouse_pos + wxPoint(0, 120));
+            break;
+        }
+        default:
+            break;
+        }
     }
-    case 3: {
-        dc.DrawLine(mouse_pos, mouse_pos+wxPoint(0, 30));
-        dc.DrawCircle(mouse_pos+wxPoint(0, 60), wxCoord(30));
-        dc.DrawLine(mouse_pos+wxPoint(0, 90), mouse_pos+wxPoint(0, 120));
-        break;
-    }
-    default:
-        break;
-    }
-   
+    else {
+        switch (item.type) {
+        case 1: {
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos), wxPoint(item.x_pos, item.y_pos) + wxPoint(50, 0));
+            dc.DrawRectangle(wxPoint(item.x_pos, item.y_pos) + wxPoint(50, -20), wxSize(100, 40));
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(150, 0), wxPoint(item.x_pos, item.y_pos) + wxPoint(200, 0));
+            break;
+        }
+        case 2: {
 
-    //dc.DrawRectangle(150, 150, 400, 200);
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos), wxPoint(item.x_pos, item.y_pos) + wxPoint(50, 0));
+            dc.DrawRectangle(wxPoint(item.x_pos, item.y_pos) + wxPoint(50, -30), wxSize(120, 60));
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(170, 0), wxPoint(item.x_pos, item.y_pos) + wxPoint(220, 0));
+
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(90, -30), wxPoint(item.x_pos, item.y_pos) + wxPoint(90, 30));
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(130, -30), wxPoint(item.x_pos, item.y_pos) + wxPoint(130, 30));
+
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(110, 30), wxPoint(item.x_pos, item.y_pos) + wxPoint(110, 70));
+            break;
+        }
+        case 3: {
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos), wxPoint(item.x_pos, item.y_pos) + wxPoint(0, 30));
+            dc.DrawCircle(wxPoint(item.x_pos, item.y_pos) + wxPoint(0, 60), wxCoord(30));
+            dc.DrawLine(wxPoint(item.x_pos, item.y_pos) + wxPoint(0, 90), wxPoint(item.x_pos, item.y_pos) + wxPoint(0, 120));
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
+
 
     dc.SetTextForeground(wxColour(0, 0, 255));
 
 }
 
 Frame::Frame(const wxString& title)
-    : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(800, 600)) {
+    : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(900, 600)) {
 
     wxMenuBar* p_menubar = new wxMenuBar;
     wxMenu* p_menuFile = new wxMenu;
