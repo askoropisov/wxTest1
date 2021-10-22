@@ -20,8 +20,6 @@ using std::fstream;
 
 fstream file;
 fstream last_data;
-int element;
-bool open_file = false;
 
 enum type {
             resistor,
@@ -44,7 +42,7 @@ enum {
     wxEVT_CLICK_MOUSE, 
 };
 
-
+void ReadLastData(Element &item);
 class Window : public wxWindow {
 public:
     Window(wxWindow* p_parent);
@@ -87,6 +85,11 @@ private:
 
 };
 
+void Window::ClicMouse(wxMouseEvent& evt) {
+    item.x_pos = evt.GetX();
+    item.y_pos = evt.GetY();
+    Refresh();
+}
 
 void Window::ReadFile(fstream& file) {
     std::string str_element;
@@ -99,7 +102,6 @@ void Window::ReadFile(fstream& file) {
     if (str_element != "RESISTOR" && str_element != "TRANSISTOR" && str_element != "SOURCE") {
         wxMessageBox(wxT("The file haved invalid data's"));
     }
-    open_file = true;
     Refresh();
 }
 
@@ -128,24 +130,6 @@ void Frame::Open(wxCommandEvent& WXUNUSED(event))
 
 wxPoint mouse_pos(item.x_pos, item.y_pos);
 void Window::WriteFile(fstream& file) {
-    if(open_file==false){
-        file << mouse_pos.x << " " << mouse_pos.y << " ";
-        switch (element)
-        {
-        case 1:
-            file << "RESISTOR";
-            break;
-        case 2:
-            file << "TRANSISTOR";
-            break;
-        case 3:
-            file << "SOURCE";
-            break;
-        default:
-            break;
-        }
-    }
-    else {
         file<<item.x_pos<<" "<<item.y_pos<<" ";
         switch (item.type)
         {
@@ -161,10 +145,9 @@ void Window::WriteFile(fstream& file) {
         default:
             break;
         }
-    }
 }
 
-void ReadLastData (Element item){
+void ReadLastData (Element &item){
     std::string temp;
     last_data.open("last_data.txt");
     last_data>>item.x_pos;
@@ -173,8 +156,6 @@ void ReadLastData (Element item){
     if (temp=="RESISTOR") item.type=1;
     if (temp=="TRANSISTOR") item.type=2;
     if (temp=="SOURCE") item.type=3;
-    element=item.type;
-    mouse_pos=wxPoint(item.x_pos, item.y_pos);
     last_data.close();
 }
 
@@ -189,19 +170,7 @@ void Frame::OnMenu_FileQuit(wxCommandEvent& evt) {
     case 5103:{
 
         last_data.open("last_data.txt", std::ofstream::out | std::ofstream::trunc);
-        if (open_file == false) {
 
-            last_data << mouse_pos.x << " " << mouse_pos.y << " ";
-            switch (element)
-            {
-            case 1: last_data<<"RESISTOR"; break;
-            case 2: last_data<<"TRANSISTOR"; break;
-            case 3: last_data<<"SOURCE"; break;
-            default:
-                break;
-            }
-        }
-        else {
             last_data << item.x_pos << " " << item.y_pos << " ";
             switch (item.type)
             {
@@ -211,10 +180,10 @@ void Frame::OnMenu_FileQuit(wxCommandEvent& evt) {
             default:
                 break;
             }
-        }
+
         last_data.close();
         Close(true);
-        }
+            }
     case wxNO:
         break;
     default:
@@ -249,23 +218,21 @@ void Frame::OnMouseMove(wxMouseEvent& evt) {
     SetStatusText(wxString::Format("[ %d, %d ]", evt.GetX(), evt.GetY(), 1));
 }
 
-void Window::ClicMouse(wxMouseEvent& evt) {
-     open_file=false;
-     mouse_pos=evt.GetPosition();
-     Refresh();
-}
+
 
 void Frame::Paint_Resistor(wxCommandEvent& evt) {
-    element=1; 
-    //Refresh();
+    item.type=1; 
+    Refresh();
 }
 
 void Frame::Paint_Transistor(wxCommandEvent& evt) {
-    element = 2;
+    item.type = 2;
+    Refresh();
 }
 
 void Frame::Paint_Source(wxCommandEvent& evt) {
-    element = 3;
+    item.type = 3;
+    Refresh();
 }
 
 void Window::OnPaint(wxPaintEvent& evt) {
@@ -273,46 +240,12 @@ void Window::OnPaint(wxPaintEvent& evt) {
     wxPaintDC dc(this);
 
     wxBrush brush(wxColor(0, 255, 50));
+
     dc.SetBrush(brush);
 
     wxPen pen(wxColor(0, 0, 0), 2);
     dc.SetPen(pen);
 
-
-    if(open_file==false){ 
-    switch (element) {
-        case 1: {
-            dc.DrawLine(mouse_pos, mouse_pos + wxPoint(50, 0));
-            dc.DrawRectangle(mouse_pos + wxPoint(50, -20), wxSize(100, 40));
-            dc.DrawLine(mouse_pos + wxPoint(150, 0), mouse_pos + wxPoint(200, 0));
-            break;
-        }
-        case 2: {
-            dc.DrawCircle(mouse_pos + wxPoint(40, 0), wxCoord(30));
-            dc.DrawLine(mouse_pos, mouse_pos + wxPoint(30, 0));
-            dc.DrawLine(mouse_pos + wxPoint(30, -20), mouse_pos + wxPoint(30, 20));
-            dc.DrawLine(mouse_pos + wxPoint(30, -7), mouse_pos+wxPoint(70,-25));
-            dc.DrawLine(mouse_pos + wxPoint(30, 7), mouse_pos+wxPoint(70,25));
-            dc.DrawLine(mouse_pos+wxPoint(60,20), mouse_pos+wxPoint(57, 13));
-            dc.DrawLine(mouse_pos+wxPoint(60,22), mouse_pos+wxPoint(50, 22));
-            break;
-        }
-        case 3: {
-            dc.DrawLine(mouse_pos, mouse_pos + wxPoint(0, 30));
-            dc.DrawCircle(mouse_pos + wxPoint(0, 60), wxCoord(30));
-
-            dc.DrawLine(mouse_pos+wxPoint(0, 40), mouse_pos + wxPoint(0, 80));
-            dc.DrawLine(mouse_pos+wxPoint(0, 40), mouse_pos + wxPoint(-10, 50));
-            dc.DrawLine(mouse_pos+wxPoint(0, 40), mouse_pos + wxPoint(10, 50));
-
-            dc.DrawLine(mouse_pos + wxPoint(0, 90), mouse_pos + wxPoint(0, 120));
-            break;
-        }
-        default:
-            break;
-        }
-    }
-    else {
         switch (item.type) {
         case 1: {
             dc.DrawLine(wxPoint(item.x_pos, item.y_pos), wxPoint(item.x_pos, item.y_pos) + wxPoint(50, 0));
@@ -344,9 +277,6 @@ void Window::OnPaint(wxPaintEvent& evt) {
         default:
             break;
         }
-    }
-
-
 
     dc.SetTextForeground(wxColour(0, 0, 255));
 
